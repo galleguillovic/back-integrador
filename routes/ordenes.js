@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const cors = require('cors');
 const Orden = require('../models/Orden');
+
+router.use(cors({ origin: ['http://localhost:5173', 'https://logisticafront-integrador.vercel.app', '*' ] }));
 
 // Ordenar las ordenes por estado 
 router.get('/', async (req, res) => {
