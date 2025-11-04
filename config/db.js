@@ -14,16 +14,13 @@ const options = {
   socketTimeoutMS: 45000,
 };
 
-let cached = globalThis._mongoose; 
-
+let cached = globalThis._mongoose;
 if (!cached) {
   cached = globalThis._mongoose = { conn: null, promise: null };
 }
 
 async function dbconnect() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+  if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     console.log('🔌 creando nueva promesa de conexión a MongoDB...');
