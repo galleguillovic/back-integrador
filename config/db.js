@@ -20,25 +20,23 @@ if (!cached) {
 }
 
 async function dbconnect() {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    console.log('🔌 creando nueva promesa de conexión a MongoDB...');
-    cached.promise = mongoose.connect(MONGO_URI, options).then((mongooseInst) => {
-      return mongooseInst.connection;
-    });
+  // reconecta si no hay conexión
+  if (!cached.conn || cached.conn.readyState === 0) {
+    console.log('🔌 intentando conectar a MongoDB...');
+    cached.promise = mongoose.connect(MONGO_URI, options)
+      .then((mongooseInst) => {
+        cached.conn = mongooseInst.connection;
+        console.log('✅ Conexión MongoDB establecida, readyState=', cached.conn.readyState);
+        return cached.conn;
+      })
+      .catch(err => {
+        cached.promise = null;
+        console.error('❌ Error MongoDB:', err && err.message ? err.message : err);
+        throw err;
+      });
+    await cached.promise;
   }
-
-  try {
-    const conn = await cached.promise;
-    cached.conn = conn;
-    console.log('✅ Conexión a MongoDB lista. readyState=', conn.readyState);
-    return conn;
-  } catch (err) {
-    cached.promise = null;
-    console.error('❌ Error en conexión a MongoDB (dbconnect):', err && err.message ? err.message : err);
-    throw err;
-  }
+  return cached.conn;
 }
 
 module.exports = dbconnect;

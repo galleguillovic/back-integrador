@@ -11,27 +11,22 @@ app.use(express.json());
 app.use(cors(corsOptions));
 
 app.get('/', (req, res) => res.send('🚚 API funcionando correctamente'));
-app.get('/vercel-test', async (req, res) => {
+app.get('/vercel-test', (req, res) => {
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-  return res.json({ ok: true, state: mongoose.connection.readyState, description: states[mongoose.connection.readyState] });
+  res.json({ ok: true, state: mongoose.connection.readyState, description: states[mongoose.connection.readyState] });
 });
 app.get('/pingdb', async (req, res) => {
-  return res.json({ ok: true, readyState: mongoose.connection.readyState });
+  res.json({ ok: true, readyState: mongoose.connection.readyState });
 });
 
-(async () => {
+
+app.use('/ordenes', async (req, res, next) => {
   try {
     await dbconnect();
-    console.log('DB connect resolved (module init).');
-    app.use('/ordenes', ordenesRoutes);
-
-    if (process.env.NODE_ENV !== 'production') {
-      const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
-    }
+    next();
   } catch (err) {
-    console.error('Fallo al conectar DB en module init:', err && err.message ? err.message : err);
+    return res.status(500).json({ mensaje: 'No se pudo conectar a DB', error: err?.message || 'unknown' });
   }
-})();
+}, ordenesRoutes);
 
 module.exports = app;
