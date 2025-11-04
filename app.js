@@ -1,18 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose'); 
 const dbconnect = require('./config/db');
 const ordenesRoutes = require('./routes/ordenes');
 
 const app = express();
 app.use(express.json());
 
-
 const allowedFromEnv = process.env.ALLOWED_ORIGINS || '';
 const allowedOrigins = allowedFromEnv
   ? allowedFromEnv.split(',').map(s => s.trim()).filter(Boolean)
   : (process.env.NODE_ENV === 'production' ? [] : ['http://localhost:5173']);
-
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -25,27 +24,28 @@ app.use(cors({
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
 }));
 
-
 app.get('/', (req, res) => res.send('🚚 API de gestión de órdenes funcionando correctamente'));
 
+// /estado de conexión con mongoose
 app.get('/vercel-test', async (req, res) => {
   try {
     const state = mongoose.connection.readyState;
     const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-    res.json({ ok: true, state, description: states[state] || 'unknown' });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-app.get('/pingdb', async (req, res) => {
-  try {
-    const mongoose = require('mongoose');
-    return res.json({ ok: true, readyState: mongoose.connection.readyState });
+    return res.json({ ok: true, state, description: states[state] || 'unknown' });
   } catch (err) {
     return res.status(500).json({ ok: false, error: err?.message || 'unknown' });
   }
 });
 
+
+app.get('/pingdb', async (req, res) => {
+  try {
+    const state = mongoose.connection.readyState;
+    return res.json({ ok: true, readyState: state });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err?.message || 'unknown' });
+  }
+});
 
 app.use('/ordenes', ordenesRoutes);
 
@@ -60,6 +60,5 @@ dbconnect()
   .catch(err => {
     console.error('Fallo al conectar DB en module init:', err && err.message ? err.message : err);
   });
-
 
 module.exports = app;
