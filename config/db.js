@@ -10,6 +10,8 @@ const dbconnect = async () => {
   }
   try {
     console.log('🔌 Intentando conectar a MongoDB Atlas (serverSelectionTimeoutMS=30000)...');
+    console.log("🔍 URI desde Vercel:", process.env.MONGO_URI);
+
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -17,6 +19,7 @@ const dbconnect = async () => {
       connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,
     });
+
     console.log('✅ Conectado a MongoDB Atlas. readyState=', mongoose.connection.readyState);
   } catch (err) {
     console.error('❌ Error al conectar a MongoDB Atlas:', err && err.message ? err.message : err);
