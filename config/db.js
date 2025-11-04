@@ -2,17 +2,26 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const dbconnect = async () => {
+  const uri = process.env.MONGO_URI;
+  console.log('DEBUG: MONGO_URI presente?', !!uri);
+  if (!uri) {
+    console.error('❌ MONGO_URI no definido');
+    throw new Error('MONGO_URI no definido');
+  }
   try {
-    console.log("🔌 Conectando a MongoDB Atlas...");
-    await mongoose.connect(process.env.MONGO_URI, {
+    console.log('🔌 Intentando conectar a MongoDB Atlas (serverSelectionTimeoutMS=30000)...');
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
     });
-    console.log("✅ Conexión exitosa a MongoDB Atlas");
-  } catch (error) {
-    console.error("❌ Error al conectar a MongoDB Atlas:", error.message);
+    console.log('✅ Conectado a MongoDB Atlas. readyState=', mongoose.connection.readyState);
+  } catch (err) {
+    console.error('❌ Error al conectar a MongoDB Atlas:', err && err.message ? err.message : err);
+    console.error(err && err.stack ? err.stack : err);
+    throw err;
   }
 };
 
