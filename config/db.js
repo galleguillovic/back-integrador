@@ -8,9 +8,9 @@ if (!MONGO_URI) {
 }
 
 const options = {
-  serverSelectionTimeoutMS: 30000,
-  connectTimeoutMS: 30000,
-  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 60000, 
+  connectTimeoutMS: 60000,
+  socketTimeoutMS: 60000,
 };
 
 let cached = globalThis._mongoose || (globalThis._mongoose = { conn: null, promise: null });
@@ -28,12 +28,10 @@ function attachConnectionListeners(conn) {
 }
 
 async function dbconnect() {
-  // If there's already a connected cached connection, return it
   if (cached.conn && cached.conn.readyState === 1) {
     return cached.conn;
   }
 
-  // If a connection promise is in-flight, await it
   if (!cached.promise) {
     console.log('🔌 creando nueva promesa de conexión a MongoDB...');
     cached.promise = mongoose.connect(MONGO_URI, options)
