@@ -7,8 +7,8 @@ const ordenesRoutes = require('./routes/ordenes');
 const corsOptions = require('./config/corsOptions');
 
 const app = express();
-app.use(express.json());
 app.use(cors(corsOptions));
+app.use(express.json());
 app.get('/', (req, res) => res.send('🚚 API funcionando correctamente'));
 
 // Endpoint que intenta conectar si no hay conexión
@@ -35,6 +35,7 @@ app.get('/pingdb', async (req, res) => {
   }
 });
 
+// Middleware de conexión + rutas
 app.use('/ordenes', async (req, res, next) => {
   try {
     await dbconnect();
